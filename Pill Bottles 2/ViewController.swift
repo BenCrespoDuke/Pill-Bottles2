@@ -16,12 +16,24 @@ class ViewController: UIViewController {
     var previewLayer: AVCaptureVideoPreviewLayer?
     var cameraCaptureOutput: AVCaptureMovieFileOutput?
     var cameraCaptureOutput2: AVCaptureVideoDataOutput?
-    var videoFile = URL(string: "file")
+    let ourURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask)[0]
+    var videoFile:URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
+        videoFile = URL(fileURLWithPath: "file", relativeTo: ourURL)
+        switch PHPhotoLibrary.authorizationStatus(){
+        case .authorized:
+            break
+        case .notDetermined:
+        PHPhotoLibrary.requestAuthorization({ answer in
+                                             
+                                             })
+            break
+        default:
+            break
+        }
         switch AVCaptureDevice.authorizationStatus(for: AVMediaType.video) {
         case .authorized:
             BeginCaptureSession()
@@ -63,6 +75,7 @@ class ViewController: UIViewController {
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
         previewLayer?.frame = view.bounds
+        //print("all done")
     }
         func startRecording(){
             if let output = cameraCaptureOutput{
@@ -79,8 +92,10 @@ class ViewController: UIViewController {
         if let output = cameraCaptureOutput {
             if output.isRecording == true {
                 self.stopRecording()
+                print("stop")
             }
             else{
+                print("start")
                 self.startRecording()
             }
         }
@@ -91,13 +106,15 @@ class ViewController: UIViewController {
 extension ViewController: AVCaptureFileOutputRecordingDelegate{
  
     func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
-      /* DispatchQueue.main.async {
+        print("recording begain")
+      /*DispatchQueue.main.async {
             
         }*/
         
     }
 
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+        print("saving")
         PHPhotoLibrary.shared().performChanges({
             PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: outputFileURL)
         }) { saved, error in
