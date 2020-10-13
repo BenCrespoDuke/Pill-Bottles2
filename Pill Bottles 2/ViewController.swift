@@ -10,18 +10,22 @@ import AVFoundation
 import Photos
 class ViewController: UIViewController {
 
-  
+    var frameNumber = 0
     let session = AVCaptureSession()
     var camera: AVCaptureDevice?
+    var connection: AVCaptureConnection?
     var previewLayer: AVCaptureVideoPreviewLayer?
     var cameraCaptureOutput: AVCaptureMovieFileOutput?
     var cameraCaptureOutput2: AVCaptureVideoDataOutput?
+    var recordingQueue: DispatchQueue?
+    var isRecording = false
     let ourURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask)[0]
     var videoFile:URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        //print(ourURL.absoluteURL)
         videoFile = URL(fileURLWithPath: "file", relativeTo: ourURL)
         switch PHPhotoLibrary.authorizationStatus(){
         case .authorized:
@@ -63,48 +67,45 @@ class ViewController: UIViewController {
             cameraCaptureOutput = AVCaptureMovieFileOutput()
             cameraCaptureOutput2 = AVCaptureVideoDataOutput()
             session.addInput(cameraCaptueInput)
-            session.addOutput(cameraCaptureOutput!)
+            //session.addOutput(cameraCaptureOutput!)
             session.addOutput(cameraCaptureOutput2!)
-            
+            connection = AVCaptureConnection(inputPorts: session.inputs[0].ports, output: session.outputs[0])
+            let sessionQueue = DispatchQueue(label:"sessionQueue")
+            cameraCaptureOutput2!.setSampleBufferDelegate(self, queue: sessionQueue)
             
             
         } catch {
             print(error.localizedDescription)
     
         }
+      
+        session.beginConfiguration()
+        session.commitConfiguration()
+        session.startRunning()
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
         previewLayer?.frame = view.bounds
+        if previewLayer != nil{
+            print("it exists")
+        }
+        //print(session.inputs[0].ports)
         //print("all done")
     }
-        func startRecording(){
-            if let output = cameraCaptureOutput{
-                output.startRecording(to: videoFile!, recordingDelegate: self)
-            }
-            }
-    func stopRecording() {
-        if let output = cameraCaptureOutput{
-            output.stopRecording()
-        }
-    }
+        
     
     @IBAction func videoButton(_ sender: Any) {
-        if let output = cameraCaptureOutput {
-            if output.isRecording == true {
-                self.stopRecording()
-                print("stop")
-            }
-            else{
-                print("start")
-                self.startRecording()
-            }
+        if isRecording == true{
+            isRecording = false
+        }
+        else{
+            isRecording = true
         }
     }
 }
 
-
-extension ViewController: AVCaptureFileOutputRecordingDelegate{
+/*extension ViewController: AVCaptureFileOutputRecordingDelegate{
  
+    
     func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
         print("recording begain")
       /*DispatchQueue.main.async {
@@ -126,10 +127,14 @@ extension ViewController: AVCaptureFileOutputRecordingDelegate{
     }
     
     
-}
+}*/
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate{
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-         
-    }
+        if isRecording {
+            print("capture")
+           print(frameNumber)
+            frameNumber=frameNumber+1
+        }
+             }
 }
 
