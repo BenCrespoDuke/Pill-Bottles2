@@ -8,8 +8,11 @@
 import UIKit
 import AVFoundation
 import Photos
+import CoreImage
 class ViewController: UIViewController {
 
+ 
+   
     var frameNumber = 0
     let session = AVCaptureSession()
     var camera: AVCaptureDevice?
@@ -21,11 +24,19 @@ class ViewController: UIViewController {
     var isRecording = false
     let ourURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask)[0]
     var videoFile:URL?
+    var masterPictureArray: [[CVImageBuffer]] = []
+    var currentArray: [CVImageBuffer] = []
+    var pngArray: [Data] = []
+    
+    let renderer = CIContext.init()
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         //print(ourURL.absoluteURL)
+       // videoButton.backgroundColor = UIColor.red
         videoFile = URL(fileURLWithPath: "file", relativeTo: ourURL)
         switch PHPhotoLibrary.authorizationStatus(){
         case .authorized:
@@ -56,7 +67,7 @@ class ViewController: UIViewController {
         
         }
     }
-        
+      
     
     func BeginCaptureSession() {
         
@@ -82,8 +93,8 @@ class ViewController: UIViewController {
         session.beginConfiguration()
         session.commitConfiguration()
         session.startRunning()
-        previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
+       previewLayer = AVCaptureVideoPreviewLayer(session: session)
+       previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
         previewLayer?.frame = view.bounds
         if previewLayer != nil{
             print("it exists")
@@ -92,48 +103,69 @@ class ViewController: UIViewController {
         //print("all done")
     }
         
+    func startRecording() {
+        
+    }
+    
+    func stopRecording() {
+        let pixleformat = kCVPixelFormatType_32BGRA
+        
+        for item in currentArray {
+            let image = CIImage.init(cvImageBuffer: item)
+            if let cSpace = image.colorSpace{
+                
+                guard let pngData = renderer.pngRepresentation(of: image, format: CIFormat(rawValue: CIFormat.RawValue(pixleformat)), colorSpace: cSpace ) else { print("unable to create png"); return }
+                
+                pngArray.append(pngData)
+                self.savePNGtoFiles(Data: pngArray[0])
+            }
+            
+            
+            
+        }
+    }
+        
+        func getFileDirectoryPath() -> URL? {
+            let path = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)
+            return path.first
+        }
+        
+        func savePNGtoFiles(Data: Data){
+            let path = getFileDirectoryPath()?.appendingPathComponent("test.png")
+            if let Path = path{
+            try? Data.write(to: Path)
+            }
+        }
+       
     
     @IBAction func videoButton(_ sender: Any) {
         if isRecording == true{
+            self.stopRecording()
             isRecording = false
         }
         else{
+            self.startRecording()
             isRecording = true
         }
     }
 }
 
-/*extension ViewController: AVCaptureFileOutputRecordingDelegate{
- 
-    
-    func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
-        print("recording begain")
-      /*DispatchQueue.main.async {
-            
-        }*/
-        
-    }
 
-    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
-        print("saving")
-        PHPhotoLibrary.shared().performChanges({
-            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: outputFileURL)
-        }) { saved, error in
-            if let Error = error{
-                print(Error.localizedDescription)
-            }
-            
-        }
-    }
-    
-    
-}*/
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate{
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         if isRecording {
             print("capture")
            print(frameNumber)
             frameNumber=frameNumber+1
+            
+            
+            if let ImageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer){
+            currentArray.append(ImageBuffer)
+                
+                
+            }
+            
+            
         }
              }
 }
