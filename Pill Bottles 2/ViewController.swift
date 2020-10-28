@@ -6,14 +6,21 @@
 //
 
 import UIKit
+import AVKit
+import Metal
 import AVFoundation
 import Photos
 import CoreImage
+import FirebaseDatabase
+import FirebaseStorage
 class ViewController: UIViewController {
 
- 
-   
+    var ref: DatabaseReference!
+    let storage = Storage.storage()
+    var storageRef: StorageReference!
+    
     var frameNumber = 0
+    var fileNumer = 1
     let session = AVCaptureSession()
     var camera: AVCaptureDevice?
     var connection: AVCaptureConnection?
@@ -25,9 +32,16 @@ class ViewController: UIViewController {
     let ourURL = FileManager.default.urls(for: .moviesDirectory, in: .userDomainMask)[0]
     var videoFile:URL?
     var masterPictureArray: [[CVImageBuffer]] = []
-    var currentArray: [CVImageBuffer] = []
+    var currentArray: [CIImage] = []
     var pngArray: [Data] = []
+    let sessionQueue = DispatchQueue(label:"sessionQueue",qos: .utility ,attributes: .concurrent)
+    let ProcessingQueue = DispatchQueue(label: "processingQueue", qos: .background, attributes: .concurrent)
+    var metalDevice = MTLCreateSystemDefaultDevice()
+    var textureChache: CVMetalTextureCache?
+    //let pixelFormat: MetalCameraPixelFormat?
     
+    @IBOutlet weak var videoButton: UIButton!
+    @IBOutlet weak var CameraView: UIView!
     let renderer = CIContext.init()
     
     
@@ -35,8 +49,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        //print(ourURL.absoluteURL)
-       // videoButton.backgroundColor = UIColor.red
+
+        ref = Database.database().reference()
+        storageRef = storage.reference()
         videoFile = URL(fileURLWithPath: "file", relativeTo: ourURL)
         switch PHPhotoLibrary.authorizationStatus(){
         case .authorized:
@@ -66,23 +81,30 @@ class ViewController: UIViewController {
                 }})
         
         }
+        //videoButton
     }
       
     
     func BeginCaptureSession() {
         
         camera = AVCaptureDevice.default(for: .video)
-        
+       /* guard let metaldevice = metalDevice, CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, metaldevice, nil,&textureChache ) == kCVReturnSuccess
+        else {
+            
+        }*/
+       
         do {
             let cameraCaptueInput = try AVCaptureDeviceInput(device: camera!)
-            cameraCaptureOutput = AVCaptureMovieFileOutput()
+          
             cameraCaptureOutput2 = AVCaptureVideoDataOutput()
             session.addInput(cameraCaptueInput)
-            //session.addOutput(cameraCaptureOutput!)
             session.addOutput(cameraCaptureOutput2!)
             connection = AVCaptureConnection(inputPorts: session.inputs[0].ports, output: session.outputs[0])
-            let sessionQueue = DispatchQueue(label:"sessionQueue")
+           
             cameraCaptureOutput2!.setSampleBufferDelegate(self, queue: sessionQueue)
+            
+           //cameraCaptureOutput2!.videoSettings = [(kCVPixelBufferPixelFormatTypeKey as String):NSNumber(value: kCVPixelFormatType_48RGB)]
+            cameraCaptureOutput2!.alwaysDiscardsLateVideoFrames = false
             
             
         } catch {
@@ -94,8 +116,10 @@ class ViewController: UIViewController {
         session.commitConfiguration()
         session.startRunning()
        previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        //previewLayer?.frame = view.frame
        previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-        previewLayer?.frame = view.bounds
+        previewLayer?.frame = CameraView.bounds
+        CameraView.layer.addSublayer(previewLayer!)
         if previewLayer != nil{
             print("it exists")
         }
@@ -104,26 +128,68 @@ class ViewController: UIViewController {
     }
         
     func startRecording() {
-        
-    }
     
+    }
+
     func stopRecording() {
-        let pixleformat = kCVPixelFormatType_32BGRA
         
-        for item in currentArray {
-            let image = CIImage.init(cvImageBuffer: item)
-            if let cSpace = image.colorSpace{
+        var i = currentArray.count-1
+        
+        while i >= 0 {
+            autoreleasepool{
+                if let data = self.CIImageToPNG(image: currentArray[i]){
+                    pngArray.append(data)
+                    print("added to array")
+                }
+            }
+            print("data removed")
+            currentArray.remove(at: i)
+            i = i-1
+        }
+        if let reff = storageRef{
+            
+            for item in pngArray{
                 
-                guard let pngData = renderer.pngRepresentation(of: image, format: CIFormat(rawValue: CIFormat.RawValue(pixleformat)), colorSpace: cSpace ) else { print("unable to create png"); return }
-                
-                pngArray.append(pngData)
-                self.savePNGtoFiles(Data: pngArray[0])
+                let currentReff = reff.child("File \(fileNumer)")
+                let uploadTask = currentReff.putData(item, metadata: nil) {(metadata,error) in
+                    guard let metaData = metadata else{
+                        print(error?.localizedDescription)
+                        return
+                    }
+                                        
+                    
+                }
+              fileNumer = fileNumer+1
             }
             
-            
-            
+        }
+        
+        var num = pngArray.count-1
+        
+        while num >= 0 {
+            pngArray.remove(at: num)
+            num = num-1
         }
     }
+    
+    
+    func CIImageToPNGData(image: CIImage) -> Data? {
+        if let cSpace = CGColorSpace(name: CGColorSpace.sRGB){
+        let data = renderer.pngRepresentation(of: image, format: CIFormat(rawValue: CIFormat.RawValue(kCVPixelFormatType_30RGB)), colorSpace:cSpace , options: [:])
+            return data
+        }
+        return nil
+    }
+    
+    func CIImageToPNG(image:CIImage) -> Data? {
+        var uImage:UIImage?
+        uImage = UIImage(ciImage: image)
+        let data = uImage!.pngData()
+    
+        uImage = nil
+        return data
+    }
+        
         
         func getFileDirectoryPath() -> URL? {
             let path = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)
@@ -140,33 +206,67 @@ class ViewController: UIViewController {
     
     @IBAction func videoButton(_ sender: Any) {
         if isRecording == true{
-            self.stopRecording()
             isRecording = false
+            videoButton.setTitle("Start Recording", for: .normal)
+            videoButton.backgroundColor = UIColor.systemGreen
+            print("stop")
+            self.stopRecording()
         }
         else{
-            self.startRecording()
+            videoButton.setTitle("stop recording", for: .normal)
+            videoButton.backgroundColor = UIColor.red
             isRecording = true
+            
+            
         }
     }
+ 
+    func CMSampleBufferToCIImage(buffer: CMSampleBuffer){
+       if let pixleBuffer = CMSampleBufferGetImageBuffer(buffer){
+            let ciImage = CIImage(cvPixelBuffer: pixleBuffer)
+        currentArray.insert(ciImage, at: 0)
+        }
+        
+        
+    }
+    
+    override func didReceiveMemoryWarning(){
+        print("memoryWarning")
+        print(pngArray.count)
+    }
+    
 }
 
 
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate{
+
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+       // print("called")
+        
         if isRecording {
-            print("capture")
+          
            print(frameNumber)
-            frameNumber=frameNumber+1
-            
-            
-            if let ImageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer){
-            currentArray.append(ImageBuffer)
-                
-                
+           frameNumber=frameNumber+1
+            if frameNumber%30 == 0{
+            ProcessingQueue.async {
+                self.CMSampleBufferToCIImage(buffer: sampleBuffer)
+            }
             }
             
             
+                
+            
         }
-             }
+        
+       
+    }
+       
+        
+    
+    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        print(kCMSampleBufferAttachmentKey_DroppedFrameReason)
+        session.stopRunning()
+       session.startRunning()
 }
 
+}
