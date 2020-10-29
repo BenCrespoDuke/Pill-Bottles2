@@ -3,7 +3,7 @@
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -25,7 +25,7 @@
                                 <rect key="frame" x="87" y="647" width="240" height="138"/>
                                 <color key="backgroundColor" systemColor="systemGreenColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="138" id="Pp7-aj-GBz"/>
+                                    <constraint firstAttribute="height" constant="138" id="l0s-XN-Kp2"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="48"/>
                                 <state key="normal" title="Start Video">
@@ -39,13 +39,13 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="2In-Ag-tNN"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="29" id="2tK-hI-viu"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="4RU-be-fUU"/>
-                            <constraint firstItem="F9R-bJ-oJ8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="87" id="6P2-Pf-5C3"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="F9R-bJ-oJ8" secondAttribute="bottom" constant="77" id="DvY-Aa-DwK"/>
-                            <constraint firstItem="F9R-bJ-oJ8" firstAttribute="top" secondItem="jcY-cm-cnQ" secondAttribute="bottom" constant="31" id="U0r-Py-Fqi"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="centerX" secondItem="F9R-bJ-oJ8" secondAttribute="centerX" id="Xae-nG-LyM"/>
+                            <constraint firstItem="F9R-bJ-oJ8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="87" id="8Ii-cI-9Xh"/>
+                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="centerX" secondItem="F9R-bJ-oJ8" secondAttribute="centerX" id="EHK-EJ-vl6"/>
+                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QfL-Rp-j0w"/>
+                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="R3K-Q5-Iyj"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="F9R-bJ-oJ8" secondAttribute="bottom" constant="77" id="R4K-hB-md8"/>
+                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="29" id="Vdh-3B-idS"/>
+                            <constraint firstItem="F9R-bJ-oJ8" firstAttribute="top" secondItem="jcY-cm-cnQ" secondAttribute="bottom" constant="31" id="vRS-EA-EVD"/>
                         </constraints>
                     </view>
                     <connections>
@@ -54,6 +54,11 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="efN-vj-3n9">
+                    <rect key="frame" x="0.0" y="0.0" width="46" height="30"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <state key="normal" title="Button"/>
+                </button>
             </objects>
             <point key="canvasLocation" x="-197.10144927536234" y="81.696428571428569"/>
         </scene>

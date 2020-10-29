@@ -18,7 +18,9 @@ class ViewController: UIViewController {
     var ref: DatabaseReference!
     let storage = Storage.storage()
     var storageRef: StorageReference!
-    
+    var totalFrame = 30
+    var durationOfVideo = 30
+    var framesTakenPerSecond = 1
     var frameNumber = 0
     var fileNumer = 1
     let session = AVCaptureSession()
@@ -130,7 +132,9 @@ class ViewController: UIViewController {
     func startRecording() {
     
     }
-
+    
+    
+// MARK: Processing Method
     func stopRecording() {
         
         var i = currentArray.count-1
@@ -173,6 +177,8 @@ class ViewController: UIViewController {
     }
     
     
+    
+    
     func CIImageToPNGData(image: CIImage) -> Data? {
         if let cSpace = CGColorSpace(name: CGColorSpace.sRGB){
         let data = renderer.pngRepresentation(of: image, format: CIFormat(rawValue: CIFormat.RawValue(kCVPixelFormatType_30RGB)), colorSpace:cSpace , options: [:])
@@ -207,14 +213,20 @@ class ViewController: UIViewController {
     @IBAction func videoButton(_ sender: Any) {
         if isRecording == true{
             isRecording = false
-            videoButton.setTitle("Start Recording", for: .normal)
-            videoButton.backgroundColor = UIColor.systemGreen
+            DispatchQueue.main.async { [self] in
+                videoButton.setTitle("Processing ...", for: .normal)
+                CameraView.isHidden = true
+                videoButton.backgroundColor = UIColor.systemGreen
+            }
             print("stop")
             self.stopRecording()
         }
         else{
-            videoButton.setTitle("stop recording", for: .normal)
-            videoButton.backgroundColor = UIColor.red
+            DispatchQueue.main.async { [self] in
+                videoButton.setTitle("Recording ...", for: .normal)
+                videoButton.backgroundColor = UIColor.red
+                videoButton.isEnabled = false
+            }
             isRecording = true
             
             
@@ -236,7 +248,7 @@ class ViewController: UIViewController {
     }
     
 }
-
+// MARK: sampleBufferDelegate
 
 extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate{
 
@@ -247,9 +259,14 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate{
           
            print(frameNumber)
            frameNumber=frameNumber+1
-            if frameNumber%30 == 0{
+            if frameNumber%(30/framesTakenPerSecond) == 0{
             ProcessingQueue.async {
                 self.CMSampleBufferToCIImage(buffer: sampleBuffer)
+                
+                if self.frameNumber == self.totalFrame*(self.durationOfVideo*self.framesTakenPerSecond){
+//                    self.isRecording = false
+                    self.videoButton(self)
+                }
             }
             }
             
