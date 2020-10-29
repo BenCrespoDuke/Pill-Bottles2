@@ -40,18 +40,28 @@ class ViewController: UIViewController {
     let ProcessingQueue = DispatchQueue(label: "processingQueue", qos: .background, attributes: .concurrent)
     var metalDevice = MTLCreateSystemDefaultDevice()
     var textureChache: CVMetalTextureCache?
+    let renderer = CIContext.init()
     //let pixelFormat: MetalCameraPixelFormat?
+    
+    
+    
     
     @IBOutlet weak var videoButton: UIButton!
     @IBOutlet weak var CameraView: UIView!
-    let renderer = CIContext.init()
+    @IBOutlet weak var ProgressBar: UIProgressView!
+    @IBOutlet weak var ProgressLabel: UILabel!
     
     
+   
     
+    
+    // MARK: Initialization
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-
+        ProgressBar!.isHidden = true
+        ProgressLabel!.isHidden = true
+        ProgressBar.progress = 0.0
         ref = Database.database().reference()
         storageRef = storage.reference()
         videoFile = URL(fileURLWithPath: "file", relativeTo: ourURL)
@@ -86,7 +96,7 @@ class ViewController: UIViewController {
         //videoButton
     }
       
-    
+    // MARK: CaptureSession
     func BeginCaptureSession() {
         
         camera = AVCaptureDevice.default(for: .video)
@@ -138,6 +148,10 @@ class ViewController: UIViewController {
     func stopRecording() {
         
         var i = currentArray.count-1
+        var percentAmount = 1.0/((Float)(currentArray.count))
+        DispatchQueue.main.async { [self] in
+            ProgressLabel.text = "Converting Photos ...."
+        }
         
         while i >= 0 {
             autoreleasepool{
@@ -149,7 +163,15 @@ class ViewController: UIViewController {
             print("data removed")
             currentArray.remove(at: i)
             i = i-1
+            DispatchQueue.main.async { [self] in
+                ProgressBar.setProgress(ProgressBar.progress + percentAmount, animated: true)
+            }
         }
+        DispatchQueue.main.async { [self] in
+            ProgressLabel.text = "Sending Images to WizeView ...."
+            ProgressBar.setProgress(0.0, animated: false)
+        }
+        percentAmount = 1.0/((Float)(pngArray.count))
         if let reff = storageRef{
             
             for item in pngArray{
@@ -164,6 +186,9 @@ class ViewController: UIViewController {
                     
                 }
               fileNumer = fileNumer+1
+                DispatchQueue.main.async { [self] in
+                    ProgressBar.setProgress(ProgressBar.progress+percentAmount, animated: true)
+                }
             }
             
         }
@@ -173,6 +198,17 @@ class ViewController: UIViewController {
         while num >= 0 {
             pngArray.remove(at: num)
             num = num-1
+        }
+        DispatchQueue.main.async { [self] in
+            ProgressBar.isHidden = true
+            ProgressBar.setProgress(0, animated: false)
+            ProgressLabel.text = "Done!"
+            sleep(2000)
+            ProgressLabel.isHidden = true
+            videoButton.setTitle("start Video", for: .normal)
+            videoButton.isEnabled = true
+            CameraView.isHidden = false
+            
         }
     }
     
@@ -217,6 +253,8 @@ class ViewController: UIViewController {
                 videoButton.setTitle("Processing ...", for: .normal)
                 CameraView.isHidden = true
                 videoButton.backgroundColor = UIColor.systemGreen
+                ProgressLabel.isHidden = false
+                ProgressBar.isHidden = false
             }
             print("stop")
             self.stopRecording()

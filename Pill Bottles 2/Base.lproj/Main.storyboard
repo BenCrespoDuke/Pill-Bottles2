@@ -17,16 +17,21 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jcY-cm-cnQ">
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jcY-cm-cnQ">
                                 <rect key="frame" x="29" y="44" width="356" height="572"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="labelColor"/>
                             </view>
-                            <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9R-bJ-oJ8">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="hello" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9ga-cg-CwX">
+                                <rect key="frame" x="164" y="437" width="86" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="highlightedColor" systemColor="labelColor"/>
+                            </label>
+                            <button contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9R-bJ-oJ8">
                                 <rect key="frame" x="87" y="647" width="240" height="138"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemGreenColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="138" id="l0s-XN-Kp2"/>
-                                </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="48"/>
                                 <state key="normal" title="Start Video">
                                     <color key="titleColor" systemColor="secondarySystemGroupedBackgroundColor"/>
@@ -35,30 +40,22 @@
                                     <action selector="videoButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fDT-ul-s8u"/>
                                 </connections>
                             </button>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" fixedFrame="YES" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="06T-9O-FLG">
+                                <rect key="frame" x="132" y="276" width="150" height="4"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </progressView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="F9R-bJ-oJ8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="87" id="8Ii-cI-9Xh"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="centerX" secondItem="F9R-bJ-oJ8" secondAttribute="centerX" id="EHK-EJ-vl6"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QfL-Rp-j0w"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="R3K-Q5-Iyj"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="F9R-bJ-oJ8" secondAttribute="bottom" constant="77" id="R4K-hB-md8"/>
-                            <constraint firstItem="jcY-cm-cnQ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="29" id="Vdh-3B-idS"/>
-                            <constraint firstItem="F9R-bJ-oJ8" firstAttribute="top" secondItem="jcY-cm-cnQ" secondAttribute="bottom" constant="31" id="vRS-EA-EVD"/>
-                        </constraints>
                     </view>
                     <connections>
                         <outlet property="CameraView" destination="jcY-cm-cnQ" id="RB8-Qj-Uhi"/>
+                        <outlet property="ProgressBar" destination="06T-9O-FLG" id="TCK-iI-4xf"/>
+                        <outlet property="ProgressLabel" destination="9ga-cg-CwX" id="eOG-Zg-Gpy"/>
                         <outlet property="videoButton" destination="F9R-bJ-oJ8" id="ZwD-Ke-lj1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="efN-vj-3n9">
-                    <rect key="frame" x="0.0" y="0.0" width="46" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <state key="normal" title="Button"/>
-                </button>
             </objects>
             <point key="canvasLocation" x="-197.10144927536234" y="81.696428571428569"/>
         </scene>
