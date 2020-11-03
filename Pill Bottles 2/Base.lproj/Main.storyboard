@@ -28,8 +28,12 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="highlightedColor" systemColor="labelColor"/>
                             </label>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" fixedFrame="YES" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="06T-9O-FLG">
+                                <rect key="frame" x="132" y="276" width="150" height="4"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </progressView>
                             <button contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9R-bJ-oJ8">
-                                <rect key="frame" x="87" y="647" width="240" height="138"/>
+                                <rect key="frame" x="29" y="639" width="356" height="138"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemGreenColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="48"/>
@@ -40,10 +44,6 @@
                                     <action selector="videoButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fDT-ul-s8u"/>
                                 </connections>
                             </button>
-                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" fixedFrame="YES" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="06T-9O-FLG">
-                                <rect key="frame" x="132" y="276" width="150" height="4"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </progressView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>

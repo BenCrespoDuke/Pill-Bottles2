@@ -146,7 +146,7 @@ class ViewController: UIViewController {
     
 // MARK: Processing Method
     func stopRecording() {
-        
+        session.stopRunning()
         var i = currentArray.count-1
         var percentAmount = 1.0/((Float)(currentArray.count))
         DispatchQueue.main.async { [self] in
@@ -167,22 +167,24 @@ class ViewController: UIViewController {
                 ProgressBar.setProgress(ProgressBar.progress + percentAmount, animated: true)
             }
         }
+        print("finished processing")
         DispatchQueue.main.async { [self] in
             ProgressLabel.text = "Sending Images to WizeView ...."
             ProgressBar.setProgress(0.0, animated: false)
         }
+        print("updated")
         percentAmount = 1.0/((Float)(pngArray.count))
         if let reff = storageRef{
             
             for item in pngArray{
-                
+            print("sending")
                 let currentReff = reff.child("File \(fileNumer)")
                 let uploadTask = currentReff.putData(item, metadata: nil) {(metadata,error) in
                     guard let metaData = metadata else{
-                        print(error?.localizedDescription)
+                       
                         return
                     }
-                                        
+                    print("succsessful")
                     
                 }
               fileNumer = fileNumer+1
@@ -203,13 +205,19 @@ class ViewController: UIViewController {
             ProgressBar.isHidden = true
             ProgressBar.setProgress(0, animated: false)
             ProgressLabel.text = "Done!"
-            sleep(2000)
+            
+                        
+        }
+        
+        sleep(2)
+        DispatchQueue.main.async { [self] in
             ProgressLabel.isHidden = true
             videoButton.setTitle("start Video", for: .normal)
             videoButton.isEnabled = true
             CameraView.isHidden = false
-            
+
         }
+        session.startRunning()
     }
     
     
