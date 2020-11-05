@@ -19,10 +19,10 @@ class ViewController: UIViewController {
     let storage = Storage.storage()
     var storageRef: StorageReference!
     var totalFrame = 30
-    var durationOfVideo = 30
+    var durationOfVideo = 3
     var framesTakenPerSecond = 1
     var frameNumber = 0
-    var fileNumer = 1
+    var fileNumer = 31
     let session = AVCaptureSession()
     var camera: AVCaptureDevice?
     var connection: AVCaptureConnection?
@@ -51,6 +51,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var ProgressBar: UIProgressView!
     @IBOutlet weak var ProgressLabel: UILabel!
     
+    @IBOutlet weak var percentLabel: UILabel!
     
    
     
@@ -59,6 +60,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        percentLabel.isHidden = true
         ProgressBar!.isHidden = true
         ProgressLabel!.isHidden = true
         ProgressBar.progress = 0.0
@@ -151,6 +153,7 @@ class ViewController: UIViewController {
         var percentAmount = 1.0/((Float)(currentArray.count))
         DispatchQueue.main.async { [self] in
             ProgressLabel.text = "Converting Photos ...."
+            percentLabel.text = "0.0%"
         }
         
         while i >= 0 {
@@ -163,14 +166,18 @@ class ViewController: UIViewController {
             print("data removed")
             currentArray.remove(at: i)
             i = i-1
+            
             DispatchQueue.main.async { [self] in
                 ProgressBar.setProgress(ProgressBar.progress + percentAmount, animated: true)
+                let tempNum = (ProgressBar.progress+percentAmount)*100.0
+                percentLabel.text = "\(tempNum)%"
             }
         }
         print("finished processing")
         DispatchQueue.main.async { [self] in
             ProgressLabel.text = "Sending Images to WizeView ...."
             ProgressBar.setProgress(0.0, animated: false)
+            ProgressLabel.text = "0.0%"
         }
         print("updated")
         percentAmount = 1.0/((Float)(pngArray.count))
@@ -190,6 +197,8 @@ class ViewController: UIViewController {
               fileNumer = fileNumer+1
                 DispatchQueue.main.async { [self] in
                     ProgressBar.setProgress(ProgressBar.progress+percentAmount, animated: true)
+                    let tempNum = (ProgressBar.progress+percentAmount)*100.0
+                    percentLabel.text = "\(tempNum)%"
                 }
             }
             
@@ -204,6 +213,7 @@ class ViewController: UIViewController {
         DispatchQueue.main.async { [self] in
             ProgressBar.isHidden = true
             ProgressBar.setProgress(0, animated: false)
+            percentLabel.isHidden = true
             ProgressLabel.text = "Done!"
             
                         
@@ -217,6 +227,7 @@ class ViewController: UIViewController {
             CameraView.isHidden = false
 
         }
+        frameNumber = 0
         session.startRunning()
     }
     
@@ -253,15 +264,20 @@ class ViewController: UIViewController {
             }
         }
        
-    
+    //MARK: Video Button Function
     @IBAction func videoButton(_ sender: Any) {
         if isRecording == true{
             isRecording = false
             DispatchQueue.main.async { [self] in
                 videoButton.setTitle("Processing ...", for: .normal)
                 CameraView.isHidden = true
+                CameraView.subviews[0].isHidden = false
+                CameraView.subviews[1].isHidden = false
                 videoButton.backgroundColor = UIColor.systemGreen
                 ProgressLabel.isHidden = false
+                ProgressLabel.textColor = UIColor.systemRed
+                percentLabel.isHidden = false
+                percentLabel.textColor = UIColor.systemRed
                 ProgressBar.isHidden = false
             }
             print("stop")
