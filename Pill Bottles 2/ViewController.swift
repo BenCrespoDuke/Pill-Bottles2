@@ -7,7 +7,6 @@
 
 import UIKit
 import AVKit
-import Metal
 import AVFoundation
 import Photos
 import CoreImage
@@ -19,7 +18,7 @@ class ViewController: UIViewController {
     let storage = Storage.storage()
     var storageRef: StorageReference!
     var totalFrame = 30
-    var durationOfVideo = 3
+    var durationOfVideo = 30
     var framesTakenPerSecond = 1
     var frameNumber = 0
     var fileNumer = 31
@@ -39,7 +38,8 @@ class ViewController: UIViewController {
     let sessionQueue = DispatchQueue(label:"sessionQueue",qos: .utility ,attributes: .concurrent)
     let ProcessingQueue = DispatchQueue(label: "processingQueue", qos: .background, attributes: .concurrent)
     var metalDevice = MTLCreateSystemDefaultDevice()
-    var textureChache: CVMetalTextureCache?
+    var seconds = 0
+   // var textureChache: CVMetalTextureCache?
     let renderer = CIContext.init()
     //let pixelFormat: MetalCameraPixelFormat?
     
@@ -50,8 +50,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var CameraView: UIView!
     @IBOutlet weak var ProgressBar: UIProgressView!
     @IBOutlet weak var ProgressLabel: UILabel!
-    
     @IBOutlet weak var percentLabel: UILabel!
+    @IBOutlet weak var SecondsLabel: UILabel!
     
    
     
@@ -63,6 +63,8 @@ class ViewController: UIViewController {
         percentLabel.isHidden = true
         ProgressBar!.isHidden = true
         ProgressLabel!.isHidden = true
+        SecondsLabel!.isHidden = true
+        seconds = durationOfVideo
         ProgressBar.progress = 0.0
         ref = Database.database().reference()
         storageRef = storage.reference()
@@ -169,7 +171,7 @@ class ViewController: UIViewController {
             
             DispatchQueue.main.async { [self] in
                 ProgressBar.setProgress(ProgressBar.progress + percentAmount, animated: true)
-                let tempNum = (ProgressBar.progress+percentAmount)*100.0
+                let tempNum = Double((floor((ProgressBar.progress)*100.0)*100)/100)
                 percentLabel.text = "\(tempNum)%"
             }
         }
@@ -185,12 +187,12 @@ class ViewController: UIViewController {
             
             for item in pngArray{
             print("sending")
-                let currentReff = reff.child("File \(fileNumer)")
-                let uploadTask = currentReff.putData(item, metadata: nil) {(metadata,error) in
-                    guard let metaData = metadata else{
-                       
+                let currentReff = reff.child("First Image Set/").child("File \(fileNumer)")
+                currentReff.putData(item, metadata: nil) {(metadata,error) in
+                    guard metadata != nil else{
                         return
                     }
+                    
                     print("succsessful")
                     
                 }
@@ -224,6 +226,7 @@ class ViewController: UIViewController {
             ProgressLabel.isHidden = true
             videoButton.setTitle("start Video", for: .normal)
             videoButton.isEnabled = true
+            CameraView.tintColor = UIColor.clear
             CameraView.isHidden = false
 
         }
@@ -233,7 +236,7 @@ class ViewController: UIViewController {
     
     
     
-    
+    //MARK: converting methods
     func CIImageToPNGData(image: CIImage) -> Data? {
         if let cSpace = CGColorSpace(name: CGColorSpace.sRGB){
         let data = renderer.pngRepresentation(of: image, format: CIFormat(rawValue: CIFormat.RawValue(kCVPixelFormatType_30RGB)), colorSpace:cSpace , options: [:])
@@ -242,9 +245,19 @@ class ViewController: UIViewController {
         return nil
     }
     
+    func CMSampleBufferToCIImage(buffer: CMSampleBuffer){
+       if let pixleBuffer = CMSampleBufferGetImageBuffer(buffer){
+            let ciImage = CIImage(cvPixelBuffer: pixleBuffer)
+        currentArray.insert(ciImage, at: 0)
+        }
+        
+        
+    }
+    
     func CIImageToPNG(image:CIImage) -> Data? {
         var uImage:UIImage?
         uImage = UIImage(ciImage: image)
+        
         let data = uImage!.pngData()
     
         uImage = nil
@@ -271,14 +284,16 @@ class ViewController: UIViewController {
             DispatchQueue.main.async { [self] in
                 videoButton.setTitle("Processing ...", for: .normal)
                 CameraView.isHidden = true
-                CameraView.subviews[0].isHidden = false
-                CameraView.subviews[1].isHidden = false
+                //CameraView.subviews[0].isHidden = false
+                //CameraView.subviews[1].isHidden = false
                 videoButton.backgroundColor = UIColor.systemGreen
                 ProgressLabel.isHidden = false
-                ProgressLabel.textColor = UIColor.systemRed
+               ProgressLabel.textColor = UIColor.systemRed
                 percentLabel.isHidden = false
                 percentLabel.textColor = UIColor.systemRed
+                SecondsLabel.isHidden = true
                 ProgressBar.isHidden = false
+                seconds = durationOfVideo
             }
             print("stop")
             self.stopRecording()
@@ -287,7 +302,11 @@ class ViewController: UIViewController {
             DispatchQueue.main.async { [self] in
                 videoButton.setTitle("Recording ...", for: .normal)
                 videoButton.backgroundColor = UIColor.red
+                CameraView.tintColor = UIColor.white
                 videoButton.isEnabled = false
+                SecondsLabel.isHidden = false
+                SecondsLabel.text = "\(durationOfVideo)"
+                
             }
             isRecording = true
             
@@ -295,14 +314,7 @@ class ViewController: UIViewController {
         }
     }
  
-    func CMSampleBufferToCIImage(buffer: CMSampleBuffer){
-       if let pixleBuffer = CMSampleBufferGetImageBuffer(buffer){
-            let ciImage = CIImage(cvPixelBuffer: pixleBuffer)
-        currentArray.insert(ciImage, at: 0)
-        }
-        
-        
-    }
+  
     
     override func didReceiveMemoryWarning(){
         print("memoryWarning")
@@ -330,6 +342,12 @@ extension ViewController: AVCaptureVideoDataOutputSampleBufferDelegate{
                     self.videoButton(self)
                 }
             }
+            }
+            if frameNumber%30 == 0{
+                DispatchQueue.main.async { [self] in
+                    seconds = seconds-1
+                    SecondsLabel.text = "\(seconds)"
+                }
             }
             
             
